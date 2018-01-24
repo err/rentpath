@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+cd "$(dirname "$0")"/..
+
+clj -Cdev -Rdev -Spom
+sed -i '
+/<testSourceDirectory>/,$ {
+  b
+}
+/<\/build>/ {
+  s:.*:<testSourceDirectory>src/dev</testSourceDirectory>\n&:
+}' \
+	pom.xml

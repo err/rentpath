@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+function usage {
+	cat <<- DONE
+
+		Usage: $(basename "$0") [clj-opts]
+
+		Start a clojure nrepl using deps.edn. Writes the repl port to ./.nrepl-port
+		for compatability with leiningen.
+
+		clj-opts - Options to the 'clj' command (see 'clj -h'). Supports:
+		  -Jopt
+		  -Calias...
+		  -Ralias...
+
+		Requires the following alias somewhere in your deps.edn configs:
+
+		  :aliases {:com.potetm/nrepl {org.clojure/tools.nrepl {:mvn/version "0.2.12"}}}
+	DONE
+}
+
+declare -a java_opts=()
+# default to having dev for repls
+declare resolve_alias=:dev:com.potetm/nrepl
+declare classpath_alias=:dev:com.potetm/nrepl
+declare help=false
+
+while (( $# > 0 )); do
+	case "$1" in
+		-J*)
+			java_opts+=("$1")
+			shift
+			;;
+		-R*)
+			resolve_alias="${1:2}$resolve_alias"
+			shift
+			;;
+		-C*)
+			classpath_alias="${1:2}$classpath_alias"
+			shift
+			;;
+		-h|--help)
+			usage
+			exit 0
+	esac
+done
+
+if ! [[ -f deps.edn ]]; then
+	echo "You must have a deps.edn file!" >&2
+	usage
+	exit 1
+fi
+
+clj "${java_opts[@]}" -C"$classpath_alias" -R"$resolve_alias" - << DONE
+(ns com.potetm.nrepl
+  (:require [clojure.tools.nrepl.server :as srvr]))
+
+(defonce s (srvr/start-server :port 0))
+
+(spit (doto (java.io.File. ".nrepl-port")
+        (.deleteOnExit))
+      (:port s))
+
+(println (str "REPL started on port " (:port s)))
+DONE
