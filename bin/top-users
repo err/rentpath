@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+curl -s -XGET localhost:5000/top-users | python -mjson.tool

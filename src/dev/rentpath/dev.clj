@@ -1,9 +1,11 @@
 (ns rentpath.dev
   (:require [clojure.core.async :as a]
-            [clojure.tools.namespace.repl :as repl]
+            [clojure.tools.namespace.repl :as r]
             [integrant.core :as ig]
             [rentpath.scores.server :as server]
             [rentpath.scores.datomic :as dat]
+            [rentpath.score-events-gen :as gevent]
+            [clojure.test.check.generators :as gen]
             [datomic.api :as d]))
 
 (defonce system nil)
@@ -46,16 +48,13 @@
 
 (defn reset []
   (stop)
-  (repl/refresh :after `go))
+  (r/refresh :after `go))
+
+(defn -main [& args]
+  (let [{:keys [::server/jetty] :as sys} (ig/init config)]
+    (.addShutdownHook (Runtime/getRuntime)
+                      (Thread. #(ig/halt! sys)))
+    (.join jetty)))
 
 (comment
-  (def c (d/connect (:datomic/uri system)))
-
-  (d/touch (d/entity (d/db c)
-                     [:user/id #uuid"98c465a5-daf0-4ebe-a531-4afd1599fa49"]))
-
-  (d/q '[:find [?uid] (max 10 ?cts)
-         :where
-         [?u :user/id ?uid]
-         [?u :user/current-total-score ?cts]]
-       (d/db c)))
+  (def c (d/connect (:datomic/uri system))))

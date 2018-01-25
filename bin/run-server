@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+function usage {
+	cat <<- DONE
+
+		Usage: $(basename "$0")
+
+		Runs the service in dev mode on localhost:5000
+
+		Assumes you have the clj command installed.
+	DONE
+}
+
+if (( $# != 0 )); then
+	usage
+	exit 1
+elif ! hash clj 2>/dev/null; then
+	echo clj command not found!!! >&2
+	usage
+	exit 1
+fi
+
+cat <<- DONE
+	Running the server on localhost:5000. To quit, press ctrl-c.
+
+	To load events run bin/load-events.
+DONE
+
+clj -Cdev -Rdev -m rentpath.dev

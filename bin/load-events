@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+function usage {
+	cat <<- DONE
+
+	Usage: $(basename "$0")
+
+	Loads mock data into the dev service (which you can start
+	via bin/run-server.)
+	DONE
+}
+
+clj -Cdev -Rdev -m rentpath.score-events-gen
