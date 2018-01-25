@@ -10,10 +10,18 @@ TODO: Figure out what fundamental value this provides. Why is it useful?
 * Create a service to publish our user-score
 
 # Assumptions
-* The messages will be rather small (< 256k)
+* The facts generated for each message will be rather small (< 256k)
+* This is a toy project, so I'm assuming the actual structure of a GitHub Event
+  isn't a concern
 
 # Design
 <img src="./design.svg" width="512">
+
+(Created using [Mermaid Live
+Editor](https://mermaidjs.github.io/mermaid-live-editor/#/edit/Z3JhcGggVEQKUltSZXF1ZXN0XSAtLSAieyd1c2VybmFtZSc6ICd1c2VyLWEnLCAnZXZlbnRfdHlwZSc6ICdQdXNoRXZlbnQnfSIgLS0-IEhTCkhTW0h0dHAgU2VydmVyXSAtLSAiezpmYWN0cyBbLi4uXX0iIC0tPiBRW1F1ZXVlXQpRIC0tPiBEVFBbRGF0b21pYyBUcmFuc2FjdGlvbiBQcm9jZXNzXQpEVFAgLS0-IERbRGF0b21pY10))
+
+NOTE: Ordinarily, I would spend a fair amount of time describing the various
+payloads in detail, describing the purpose of each attribute.
 
 # Discussion
 ## Architecture
@@ -38,3 +46,23 @@ all in-flight messages (as the [messages will be rather small](#assumptions)).
 
 We can still use DynamoDB as Datomic's backing storage to ensure that our costs
 and capacity scales.
+
+## Where to generate facts
+We could generate facts on the Http Server or in the Datomic Transaction
+Process. Generating facts on the Http Server allows us to have a
+general-purpose throttle on writes to Datomic. I'm not sure of any particular
+advantage to generating facts in the Datomic Transaction Process itself.
+
+It's possible that having a general event-\>facts process might be useful. This
+would mean transforming from GitHub Event-\>System Event, and sending that
+System Event to a broker. However, the value proposition there is dubious at
+best. There _must_ be some kind of translation from GitHub Event-\>facts. If
+we're interested in generating more actions from that event, we can
+asynchronously watch the Datomic log for those events. Therefore, the only
+value I see is that we might be able to react to events without waiting for
+them to make it to Datomic. If this is necessary, we might consider using e.g.
+Kafka<sup>[1](#kafka)</sup>.
+
+---
+<a name="kafka"><sup>1</sup></a> I'm not incredibly familiar with Kafka, but my
+understanding is that is supports a form of pub/sub out of the box.

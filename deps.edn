@@ -1,14 +1,24 @@
-{:paths ["src/main"]
- :deps {org.clojure/clojure {:mvn/version "1.9.0"}}
+{:paths ["src/main" "resources/main"]
+ :deps {cheshire {:mvn/version "5.8.0"}
+        com.datomic/datomic-free {:mvn/version "0.9.5656"
+                                  :exclusions [org.slf4j/slf4j-nop]}
+        compojure {:mvn/version "1.6.0"}
+        integrant {:mvn/version "0.6.3"}
+        org.clojure/clojure {:mvn/version "1.9.0"}
+        org.clojure/core.async {:mvn/version "0.4.474"}
+        org.eclipse.jetty/jetty-server {:mvn/version "9.4.8.v20171121"}
+        ring/ring-core {:mvn/version "1.6.3"}
+        ring/ring-jetty-adapter {:mvn/version "1.6.3"}
+        ring/ring-json {:mvn/version "0.4.0"}
+
+        ;; logging
+        org.clojure/tools.logging {:mvn/version "0.4.0"}
+        ch.qos.logback/logback-classic {:mvn/version "1.2.3"}
+        org.slf4j/slf4j-api {:mvn/version "1.7.25"}}
  :aliases {:dev {:extra-paths ["src/dev"]
-                 :extra-deps {org.clojure/test.check {:mvn/version "0.9.0"}}}
-           :com.potetm/nrepl {:extra-deps {org.clojure/tools.nrepl {:mvn/version "0.2.12"}}}
-           :com.potetm/aot {:extra-deps {org.clojure/tools.namespace {:mvn/version "0.2.11"}
-                                         org.clojure/java.classpath {:mvn/version "0.2.3"}}}
-           :com.potetm/uberjar {:extra-deps
-                                {org.clojure/tools.deps.alpha
-                                 {:mvn/version "0.4.295"
-                                  :exclusions [ch.qos.logback/logback-classic]}}}}
+                 :extra-deps {org.clojure/test.check {:mvn/version "0.9.0"}
+                              org.clojure/tools.namespace {:mvn/version "0.2.11"}}}
+           :com.potetm/nrepl {:extra-deps {org.clojure/tools.nrepl {:mvn/version "0.2.12"}}}}
  :mvn/repos {"central" {:url "https://repo1.maven.org/maven2/"}
              "clojars" {:url "https://clojars.org/repo"}}}
 
