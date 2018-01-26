@@ -12,4 +12,11 @@ function usage {
 	DONE
 }
 
+if (( $# != 0 )); then
+	usage
+	exit 0
+fi
+
+echo "Loading events into the dev service..."
 clj -Cdev -Rdev -m rentpath.score-events-gen
+echo "Finished!"

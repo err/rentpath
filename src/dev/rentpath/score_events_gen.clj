@@ -1,4 +1,5 @@
 (ns rentpath.score-events-gen
+  "Generators relevant to the scores service."
   (:require [clj-http.client :as http]
             [clojure.test.check.generators :as gen]
             [clojure.string :as str]
@@ -24,7 +25,7 @@
                                          "CreateEvent"})))))
 
 (defn -main
-  "Load 1000 events from 100 users into the system"
+  "Load 1000 events from 100 users into the dev system."
   [& args]
   (doseq [e (gen/sample gen-event
                         1000)]

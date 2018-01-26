@@ -1,4 +1,4 @@
-# Working Notes
+# Design Notes
 # Problem
 Create a ranking system based on GitHub user activity.
 
@@ -18,12 +18,27 @@ TODO: Figure out what fundamental value this provides. Why is it useful?
 <img src="./design.svg" width="512">
 
 (Created using [Mermaid Live
-Editor](https://mermaidjs.github.io/mermaid-live-editor/#/edit/Z3JhcGggVEQKUltSZXF1ZXN0XSAtLSAieyd1c2VybmFtZSc6ICd1c2VyLWEnLCAnZXZlbnRfdHlwZSc6ICdQdXNoRXZlbnQnfSIgLS0-IEhTCkhTW0h0dHAgU2VydmVyXSAtLSAiezpmYWN0cyBbLi4uXX0iIC0tPiBRW1F1ZXVlXQpRIC0tPiBEVFBbRGF0b21pYyBUcmFuc2FjdGlvbiBQcm9jZXNzXQpEVFAgLS0-IERbRGF0b21pY10))
+Editor](https://mermaidjs.github.io/mermaid-live-editor/#/edit/Z3JhcGggVEQKUltSZXF1ZXN0XSAtLSAieyd1c2VybmFtZSc6ICd1c2VyLWEnLCAnZXZlbnRfdHlwZSc6ICdQdXNoRXZlbnQnfSIgLS0-IEhTCkhTW0h0dHAgU2VydmVyXSAtLSAiezpmYWN0cyBbLi4uXX0iIC0tPiBRW1F1ZXVlXQpRIC0tPiBEVFBbQXN5bmMgV3JpdGVyXQpEVFAgLS0-IERbRGF0b21pY10))
 
 NOTE: Ordinarily, I would spend a fair amount of time describing the various
 payloads in detail, describing the purpose of each attribute.
 
-# Discussion
+# Code Layout
+### Prod Namespaces
+* Http Server - `rentpath.scores.http-server`
+* Async Writer - `rentpath.scores.datomic`
+
+### Dev Namespaces
+Since we're not yet ready to go to production, everything will be started in
+development mode backed by an in-memory database.
+
+* Dev Service (both Http Server and Async Writer) -  `rentpath.dev`
+* Event Generation (for loading mock data) - `rentpath.score-events-gen`
+
+# Discussion (Not Required Reading)
+This section is only really useful if you're curious how I arrived at certain
+decisions.
+
 ## Architecture
 Considering the stated request is to just "return aggregate scores" for users,
 my initial inclination was to back this store with DynamoDB. The stats for any

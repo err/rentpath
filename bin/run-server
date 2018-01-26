@@ -25,7 +25,7 @@ fi
 cat <<- DONE
 	Running the server on localhost:5000. To quit, press ctrl-c.
 
-	To load events run bin/load-events.
+	To load events run bin/load-events
 DONE
 
 clj -Cdev -Rdev -m rentpath.dev

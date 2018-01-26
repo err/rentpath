@@ -1,4 +1,6 @@
 (ns rentpath.scores.datomic
+  "Datomic bits of the scores service. Includes an async
+  datomic writer process."
   (:require [datomic.api :as d]
             [clojure.core.async :as a]
             [integrant.core :as ig]
@@ -49,19 +51,22 @@
                                 :or {a 0}} (d/entity db id)]
                            [[:db/add tx-id attr (+ a amt)]])}}])
 
-(defn writer [datomic-uri in]
+(defn async-writer
+  "Async Writer Process for Datomic."
+  [datomic-uri in]
   (a/go-loop []
     ;; todo: add batching as applicable
     (when-some [{:keys [facts] :as _v} (a/<! in)]
       (try @(d/transact-async (d/connect datomic-uri)
                               facts)
            (catch Exception e
+             ;; todo: add better error handling (e.g. retries, backoff, etc)
              (log/error e
                         "Error in datomic transaction process"
                         {:facts facts})))
       (recur))))
 
-(defmethod ig/init-key ::datomic-writer [_ {:keys [:datomic/uri
+(defmethod ig/init-key ::async-writer [_ {:keys [:datomic/uri
                                                    ::chan-in]}]
-  (writer uri
-          chan-in))
+  (async-writer uri
+                chan-in))

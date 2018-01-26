@@ -1,4 +1,5 @@
-(ns rentpath.scores.server
+(ns rentpath.scores.http-server
+  "Web Application for the scores service."
   (:require [clojure.core.async :as a]
             [clojure.tools.logging :as log]
             [compojure.core :as cmpj]
@@ -10,9 +11,9 @@
   (:import (org.eclipse.jetty.server Server)
            (java.util UUID Date)))
 
-(defn event-hook [async-chan {user-id "user_id"
-                              username "username"
-                              event-type "event_type" :as pl}]
+(defn event->facts [{user-id "user_id"
+                     username "username"
+                     event-type "event_type"}]
   (let [event-type->score #(get {"PushEvent" 5
                                  "PullRequestReviewCommentEvent" 4
                                  "WatchEvent" 3
@@ -20,22 +21,29 @@
                                 %
                                 1)
         uid (UUID/fromString user-id)]
-    (a/put! async-chan
-            {:facts [{:db/id "user"
-                      :user/id uid
-                      :user/username username
-                      :user/events {:db/id "event"
-                                    :event/type event-type
-                                    :event/time (Date.)}}
+    [{:db/id "user"
+      :user/id uid
+      :user/username username
+      :user/events {:db/id "event"
+                    :event/type event-type
+                    :event/time (Date.)}}
 
-                     ;; For now, this will guarantee correctness.
-                     ;; If this becomes a bottleneck, give up on absolute correctness
-                     ;; and move this arithmetic elsewhere (e.g. the appserver).
-                     [:inc-by
-                      "user"
-                      [:user/id uid]
-                      :user/current-total-score
-                      (event-type->score event-type)]]})))
+     ;; For now, this will guarantee correctness.
+     ;; If this becomes a bottleneck, give up on absolute correctness
+     ;; and move this arithmetic elsewhere (e.g. the appserver).
+     ;; (My guess is it will likely never be an issue.)
+     [:inc-by
+      "user"
+      [:user/id uid]
+      :user/current-total-score
+      (event-type->score event-type)]]))
+
+(defn event-hook
+  "Put the relevant facts for this event on a channel for
+   async processing."
+  [async-chan event]
+  (a/put! async-chan
+          {:facts (event->facts event)}))
 
 (defn routes [{:keys [:datomic/uri
                       ::async-chan]}]
